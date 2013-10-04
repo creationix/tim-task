@@ -3,7 +3,7 @@ tim-task
 
 A simple build system I created for git-browser
 
-Here is an example build recipie from git-browser.
+Here is an example build recipe from git-browser.
 
 ```js
 #!/usr/bin/env node
