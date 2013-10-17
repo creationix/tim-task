@@ -43,6 +43,13 @@ function addJson(path) {
   return path;
 }
 
+function addText(path, real) {
+  if (path in modules) return path;
+  var txt = fs.readFileSync(real, "utf8");
+  modules[path] = "module.exports = " + JSON.stringify(txt);
+  return path;
+}
+
 function baseResolve(base, name) {
   if (name[0] === "/") return localResolve(name);
   if (name[0] === ".") return localResolve(pathJoin(base, name));
@@ -56,6 +63,11 @@ function baseResolve(base, name) {
 }
 
 function localResolve(path) {
+  if (/#txt$/.test(path)) {
+    var real = path.substr(0, path.length - 4);
+    if (fs.existsSync(real)) return addText(path, real);
+    return false;
+  }
   if (/\.js$/.test(path)) {
     if (fs.existsSync(path)) return add(path);
     return false;
