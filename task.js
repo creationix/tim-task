@@ -227,7 +227,7 @@ function rmrf(path, callback) {
   function onunlink(err) {
     if (err) {
       if (err.code === "ENOENT") return callback();
-      if (err.code === "EISDIR") return fs.rmdir(path, onrmdir);
+      if (err.code === "EISDIR" || err.code === "EPERM") return fs.rmdir(path, onrmdir);
       return callback(err);
     }
     console.log("unlink " + path);
@@ -235,7 +235,7 @@ function rmrf(path, callback) {
   }
   function onrmdir(err) {
     if (err) {
-      if (err.code === "ENOTEMPTY") return fs.readdir(path, onreaddir);
+      if (err.code === "ENOTEMPTY" || err.code === "EPERM") return fs.readdir(path, onreaddir);
       return callback(err);
     }
     console.log("rmdir " + path);
