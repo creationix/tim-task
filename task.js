@@ -23,6 +23,7 @@ task.lessc = lessc;
 task.build = build;
 task.newer = newer;
 task.execFile = execFile;
+task.manifest = manifest;
 
 function task(name, deps, fn) {
   if (typeof deps === "function" && typeof fn === "undefined") {
@@ -393,6 +394,35 @@ function build(source, dest, callback) {
     });
   });
 }
+
+function manifest(base, files, target, callback) {
+  var done = false;
+  if (!callback) return manifest.bind(this, base, files, target);
+  var left = files.length;
+  var out = new Array(left);
+  files.forEach(function (name, i) {
+    fs.stat(pathJoin(base, name), function (err, stat) {
+      if (done) return;
+      if (err) {
+        done = true;
+        return callback(err);
+      }
+      out[i] = name + " # " + stat.size.toString(36) + "-" + stat.mtime.valueOf().toString(36);
+      check();
+    });
+  });
+  function check() {
+    if (--left) return;
+    done = true;
+    out.unshift("CACHE MANIFEST");
+    var targetPath = pathJoin(base, target);
+    console.log("manifest " + targetPath);
+    fs.writeFile(targetPath, out.join("\n"), callback);
+  }
+}
+
+
+
 
 function execFile(file, args, options, callback) {
   if (!callback) return function execFileAction(callback) {
