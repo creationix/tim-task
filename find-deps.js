@@ -4,6 +4,8 @@ var pathJoin = require('path').join;
 
 var mine = require('./mine.js');
 var modules = {};
+var packages = {};
+var aliases = {};
 
 exports.flush = flush;
 function flush() {
@@ -50,11 +52,33 @@ function addText(path, real) {
   return path;
 }
 
+function rootName(name) {
+  var index = name.indexOf("/");
+  return index < 0 ? name : name.substr(0, index);
+}
+
+function loadPackage(path) {
+  if (path in packages) return packages[path];
+  var packagePath = pathJoin(path, "package.json");
+  if (!fs.existsSync(packagePath)) {
+    packages[path] = false;
+    return packages[path];
+  }
+  var meta = packages[path] = JSON.parse(fs.readFileSync(packagePath));
+  if (meta.browser) {
+    for (var name in meta.browser) {
+      aliases[pathJoin(path, name)] = pathJoin(path, meta.browser[name]);
+    }
+  }
+  return meta;
+}
+
 function baseResolve(base, name) {
   if (name[0] === "/") return localResolve(name);
   if (name[0] === ".") return localResolve(pathJoin(base, name));
   var newBase = base;
   while (true) {
+    loadPackage(pathJoin(newBase, "node_modules", rootName(name)));
     var result = localResolve(pathJoin(newBase, "node_modules", name));
     if (result) return result;
     if (newBase.length === 1) return false;
@@ -63,6 +87,7 @@ function baseResolve(base, name) {
 }
 
 function localResolve(path) {
+  if (path in aliases) path = aliases[path];
   if (/#txt$/.test(path)) {
     var real = path.substr(0, path.length - 4);
     if (fs.existsSync(real)) return addText(path, real);
