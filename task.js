@@ -415,6 +415,8 @@ function manifest(base, files, target, callback) {
     if (--left) return;
     done = true;
     out.unshift("CACHE MANIFEST");
+    out.push("NETWORK:");
+    out.push("*");
     var targetPath = pathJoin(base, target);
     console.log("manifest " + targetPath);
     fs.writeFile(targetPath, out.join("\n"), callback);
