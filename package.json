@@ -1,6 +1,6 @@
 {
   "name": "tim-task",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A simple build system I created for git-browser",
   "main": "task.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "url": "https://github.com/creationix/tim-task/issues"
   },
   "dependencies": {
-    "less": "~1.4.2"
+    "less": "~1.4.2",
+    "js-linker": "0.0.2"
   }
 }

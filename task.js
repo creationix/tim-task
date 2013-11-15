@@ -1,5 +1,6 @@
 var fs = require('fs');
 var childProcess = require('child_process');
+var compile = require('js-linker');
 var less = require('less');
 
 var pathJoin = require('path').join;
@@ -382,7 +383,7 @@ function build(source, dest, callback) {
   if (!callback) return function buildAction(callback) {
     return build(source, dest, callback);
   };
-  require('./find-deps.js').build(source, function (err, code) {
+  compile(nodeLoader, "./" + source, function (err, code) {
     if (err) return callback(err);
     mkdirp(dirname(dest), function (err) {
       if (err) return callback(err);
@@ -392,6 +393,17 @@ function build(source, dest, callback) {
         callback();
       });
     });
+  });
+}
+
+function nodeLoader(path, binary, callback) {
+  console.log("link", path);
+  fs.readFile(path, binary ? null : 'utf8', function (err, code) {
+    if (err) {
+      if (err.code === "ENOENT") return callback();
+      return callback(err);
+    }
+    return callback(null, code);
   });
 }
 
